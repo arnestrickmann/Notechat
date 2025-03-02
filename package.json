@@ -1,0 +1,61 @@
+{
+  "name": "NoteChat",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Chat with your Apple Notes, locally",
+  "author": {
+    "name": "null",
+    "email": "null"
+  },
+  "type": "module",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development npm-run-all --parallel dev:react dev:electron",
+    "dev:react": "vite",
+    "dev:electron": "npm run transpile:electron; electron .",
+    "transpile:electron": "tsc --project src/electron/tsconfig.json",
+    "build": "npm run clean && npm run build:all",
+    "build:all": "npm run build:react && npm run build:electron",
+    "build:react": "vite build --outDir dist-react",
+    "build:electron": "npm run transpile:electron",
+    "rebuild": "npx electron-rebuild",
+    "start": "cross-env NODE_ENV=production electron .",
+    "package": "npm run build && electron-builder --mac --arm64",
+    "clean": "rimraf dist-electron dist-react release",
+    "postinstall": "electron-builder install-app-deps",
+    "analyze-deps": "depcruise src/electron/database/databaseService.ts --include-only '^node_modules' --output-type dot | dot -T svg > dependency-graph.svg"
+  },
+  "dependencies": {
+    "@electron/notarize": "^2.5.0",
+    "better-sqlite3": "^11.8.1",
+    "bindings": "^1.5.0",
+    "dotenv": "^16.4.7",
+    "file-uri-to-path": "^2.0.0",
+    "framer-motion": "^12.0.1",
+    "os-utils": "^0.0.14",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-markdown": "^9.0.3",
+    "sqlite-vec": "^0.1.7-alpha.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/os-utils": "^0.0.4",
+    "@types/react": "^18.0.26",
+    "@types/react-dom": "^18.0.9",
+    "@vitejs/plugin-react": "^3.0.0",
+    "autoprefixer": "^10.4.20",
+    "cross-env": "^7.0.3",
+    "dependency-cruiser": "^16.9.0",
+    "electron": "^30.0.2",
+    "electron-builder": "^24.13.3",
+    "electron-rebuild": "^3.2.9",
+    "npm-run-all": "^4.1.5",
+    "postcss": "^8.5.1",
+    "rimraf": "^6.0.1",
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.2",
+    "typescript": "^4.9.3",
+    "vite": "^4.0.0"
+  }
+}

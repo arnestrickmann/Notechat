@@ -1,0 +1,74 @@
+{
+  "appId": "your.app.id",
+  "productName": "NoteChat",
+  "copyright": "Copyright © 2025",
+  "directories": {
+    "output": "dist",
+    "buildResources": "build"
+  },
+  "asar": true,
+  "asarUnpack": [
+    "**/*.dylib",
+    "node_modules/sqlite-vec-darwin-arm64/vec0.dylib",
+    "node_modules/better-sqlite3/**/*",
+    "node_modules/sqlite-vec/**/*",
+    "node_modules/sqlite-vec-darwin-arm64/**/*",
+    "node_modules/sqlite-vec/node_modules/sqlite-vec-darwin-arm64/**/*",
+    "node_modules/bindings/**/*",
+    "node_modules/file-uri-to-path/**/*",
+    "node_modules/better-sqlite3/build/Release/better_sqlite3.node",
+    "node_modules/sqlite-vec/node_modules/sqlite-vec-darwin-arm64/vec0.dylib"
+  ],
+  "files": [
+    "dist-electron/**/*",
+    "dist-react/**/*",
+    "node_modules/better-sqlite3/**/*",
+    "node_modules/sqlite-vec/**/*",
+    "node_modules/bindings/**/*",
+    "node_modules/file-uri-to-path/**/*",
+    "node_modules/**/*"
+  ],
+ "extraResources": [
+    "dist-electron/preload.cjs",
+    {
+      "from": "node_modules/better-sqlite3/build/Release/",
+      "to": "app.asar.unpacked/node_modules/better-sqlite3/build/Release/",
+      "filter": ["*.node"]
+    },
+    {
+      "from": "node_modules/better-sqlite3/build/Release/",
+      "to": "app.asar.unpacked/node_modules/better-sqlite3/build/Release/",
+      "filter": ["better_sqlite3.node"]
+    },
+    {
+      "from": "node_modules/sqlite-vec-darwin-arm64/",
+      "to": "app.asar.unpacked/node_modules/sqlite-vec-darwin-arm64/",
+      "filter": ["vec0.dylib"]
+    }
+  ],
+  "icon": "./logo.jpeg",
+  "mac": {
+    "target": ["dmg", "zip"],
+    "icon": "./logo.png",
+    "category": "public.app.category.productivity",
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false,
+    "entitlements": "build/entitlements.mac.plist",
+    "entitlementsInherit": "build/entitlements.mac.plist",
+    "signIgnore": null,
+    "identity": null,
+    "provisioningProfile": null,
+    "notarize": {
+      "teamId": null
+    },
+    "timestamp": "http://timestamp.apple.com/ts01",
+    "extendInfo": {
+      "NSAppleEventsUsageDescription": "NoteChat needs access to Apple Notes to import and process your notes."
+    }
+  },
+  "dmg": {
+      "sign": true
+    },
+   "beforeBuild": "./build/scripts/sign-natives-wrapper.cjs",
+  "afterSign": "./build/scripts/notarize.cjs"
+}

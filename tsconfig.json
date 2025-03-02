@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    // Removed the types entry that was causing issues
+    "typeRoots": ["./src/types", "./node_modules/@types"]
+
+  },
+  "include": ["src"],
+  "exclude": ["src/electron"],  // This is important! Excludes electron folder
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
