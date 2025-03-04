@@ -14,6 +14,11 @@ Built with Electron and React, it provides a seamless experience for conversing 
   </a>
 </p>
 
+## 📝 Download Notechat with Cloud Mode for better performance
+
+👉 [Download NoteChat Cloud Mode](https://notechat.app)
+
+
 ## Builders
 
 <table>
