@@ -45,7 +45,7 @@ async function createWindow() {
 
     mainWindow.webContents.on(
       "did-fail-load",
-      (event, errorCode, errorDescription) => {
+      (_event, errorCode, errorDescription) => {
         console.error("Failed to load:", errorCode, errorDescription);
       },
     );
@@ -57,7 +57,7 @@ async function createWindow() {
     ipcMain.handle(
       "find-similar-chunks",
       async (
-        event,
+        _event,
         queryText: string,
         limit?: number,
         distanceThreshold?: number,

@@ -47,17 +47,6 @@ const MODELS = {
 
 type ModelType = (typeof MODELS)[keyof typeof MODELS];
 
-interface ModelConfig {
-  id: ModelType;
-  name: string;
-  displayName: string;
-}
-
-const MODEL_CONFIGS: ModelConfig[] = [
-  { id: MODELS.LLAMA2, name: "llama2", displayName: "Llama 2" },
-  { id: MODELS.LLAMA3, name: "llama3.2:3b", displayName: "Llama 3" },
-];
-
 export default function Chat({ onSetupComplete }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -66,8 +55,7 @@ export default function Chat({ onSetupComplete }: ChatProps) {
     running: false,
   });
   const [currentResponse, setCurrentResponse] = useState("");
-  const [showInstructions, setShowInstructions] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<ModelType>(MODELS.LLAMA3);
+  const [selectedModel] = useState<ModelType>(MODELS.LLAMA3);
   const [isStarting, setIsStarting] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const noteReferences: Record<string, NoteReference> = {};
@@ -151,29 +139,6 @@ export default function Chat({ onSetupComplete }: ChatProps) {
       setIsStarting(false);
     }
   };
-
-  const handlePullModel = async () => {
-    try {
-      setIsLoading(true);
-      await window.electron.pullOllamaModel(selectedModel);
-      setOllamaStatus({ running: true, modelAvailable: true });
-    } catch (error) {
-      console.error(`Failed to pull ${selectedModel} model:`, error);
-      setOllamaStatus((prev) => ({ ...prev, error: undefined }));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    const handleToggleInstructions = () => setShowInstructions((prev) => !prev);
-    window.addEventListener("toggleInstructions", handleToggleInstructions);
-    return () =>
-      window.removeEventListener(
-        "toggleInstructions",
-        handleToggleInstructions
-      );
-  }, []);
 
   const generateResponse = async (
     prompt: string,
