@@ -8,6 +8,15 @@
 Notechat is a desktop application that enables you to interact with your Apple Notes through a chat interface.
 Built with Electron and React, it provides a seamless experience for conversing with your notes.
 
+### A Notechat Poem
+
+Across the hush of open tabs, a whisper starts to float,  
+A line of thought from yesterday now sails back like a note.  
+You ask, it answers softly, folding memory to rhyme,  
+A lighthouse in the text sea keeping time with time.  
+Coffee steam and cursor glow, your stories interlace—  
+In every chat with Notechat, your notes reclaim their place.  
+
 <p align="start">
   <a href="https://youtu.be/YeAgi0HQo7M?si=ivRz7Pp1xvq8HHBC">
     <img src="https://www.notechat.app/screenshotmusic.png" alt="NoteChat Demo" width="100%">
