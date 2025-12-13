@@ -14,6 +14,18 @@ interface SimilarChunk {
   distance: number;
 }
 
+interface ProgressEvent {
+  type: 'start' | 'progress' | 'note' | 'chunk' | 'complete' | 'error';
+  totalNotes?: number;
+  processedNotes?: number;
+  totalChunks?: number;
+  processedChunks?: number;
+  currentNoteTitle?: string;
+  currentChunkIndex?: number;
+  message?: string;
+  error?: string;
+}
+
 interface ElectronAPI {
   checkOllamaStatus: () => Promise<OllamaStatus>;
   startOllama: () => Promise<boolean>;
@@ -21,6 +33,7 @@ interface ElectronAPI {
   checkOllamaModel: (modelName: string) => Promise<boolean>;
   pullOllamaModel: (modelName: string) => Promise<boolean>;
   onSetupMessage: (callback: (message: string) => void) => () => void;
+  onExtractionProgress: (callback: (event: ProgressEvent) => void) => () => void;
   findSimilarChunks: (
     queryText: string,
     limit?: number,
@@ -54,6 +67,12 @@ contextBridge.exposeInMainWorld("electron", {
       callback(message),
     );
     return () => ipcRenderer.removeAllListeners("setup-message");
+  },
+  onExtractionProgress: (callback: (event: ProgressEvent) => void) => {
+    ipcRenderer.on("extraction-progress", (_: unknown, event: ProgressEvent) =>
+      callback(event),
+    );
+    return () => ipcRenderer.removeAllListeners("extraction-progress");
   },
   findSimilarChunks: (
     queryText: string,
