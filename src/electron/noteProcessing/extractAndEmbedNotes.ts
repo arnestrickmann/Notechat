@@ -3,6 +3,18 @@ import * as crypto from "crypto";
 import { DatabaseService } from "../database/databaseService.js";
 import { CharChunker } from "./CharChunker.js";
 
+export interface ProgressEvent {
+  type: 'start' | 'progress' | 'note' | 'chunk' | 'complete' | 'error';
+  totalNotes?: number;
+  processedNotes?: number;
+  totalChunks?: number;
+  processedChunks?: number;
+  currentNoteTitle?: string;
+  currentChunkIndex?: number;
+  message?: string;
+  error?: string;
+}
+
 const COUNT_SCRIPT = `
 tell application "Notes"
     set noteCount to count of notes
@@ -99,6 +111,7 @@ export interface ChunkMetadata {
 
 export async function extractAndEmbedNotes(
   dbService: DatabaseService,
+  onProgress?: (event: ProgressEvent) => void,
 ): Promise<void> {
   console.log("Cleaning existing data from all tables...");
   dbService.cleanAllTables();
@@ -107,6 +120,13 @@ export async function extractAndEmbedNotes(
   let totalNotes = countNotes();
   let processedNotes = 1; // because of NOT NULL constraint from sqlite-vec
   let processedChunks = 0;
+
+  // Send start event
+  onProgress?.({
+    type: 'start',
+    totalNotes,
+    message: `Starting extraction of ${totalNotes} notes...`
+  });
 
   const split = crypto.randomBytes(8).toString("hex");
   const process = spawn("osascript", [
@@ -192,6 +212,16 @@ export async function extractAndEmbedNotes(
     try {
       processedNotes++;
       console.log(`\nProcessing Note ${processedNotes}/${totalNotes}:`);
+      
+      // Send note progress event
+      onProgress?.({
+        type: 'note',
+        totalNotes,
+        processedNotes,
+        currentNoteTitle: note.title || 'Untitled',
+        message: `Processing note: ${note.title || 'Untitled'}`
+      });
+      
       const processedNote: ProcessedNote = {
         id: note.id!,
         title: note.title || "",
@@ -236,6 +266,19 @@ export async function extractAndEmbedNotes(
         for (const [index, chunk] of chunks.entries()) {
           try {
             console.log(`Processing chunk ${index + 1}/${chunks.length}`);
+            
+            // Send chunk progress event
+            onProgress?.({
+              type: 'chunk',
+              totalNotes,
+              processedNotes,
+              totalChunks: chunks.length,
+              processedChunks: processedChunks + 1,
+              currentChunkIndex: index + 1,
+              currentNoteTitle: processedNote.title,
+              message: `Processing chunk ${index + 1}/${chunks.length} for "${processedNote.title}"`
+            });
+            
             const embedding = await generateEmbedding(chunk);
             processedChunks++;
 
@@ -265,6 +308,14 @@ export async function extractAndEmbedNotes(
               `Error processing chunk ${index + 1} of note ${processedNote.id}:`,
               error,
             );
+            
+            // Send error event
+            onProgress?.({
+              type: 'error',
+              error: `Failed to process chunk ${index + 1} of note "${processedNote.title}": ${error}`,
+              currentNoteTitle: processedNote.title,
+              message: `Error processing chunk ${index + 1}/${chunks.length}`
+            });
           }
         }
 
@@ -283,9 +334,24 @@ export async function extractAndEmbedNotes(
           title: processedNote.title,
           folderName: processedNote.folderName,
         });
+        
+        // Send error event
+        onProgress?.({
+          type: 'error',
+          error: `Failed to save note "${processedNote.title}": ${error}`,
+          currentNoteTitle: processedNote.title,
+          message: `Error saving note`
+        });
       }
     } catch (error) {
       console.error(`Error processing note ${note.id}:`, error);
+      
+      // Send error event
+      onProgress?.({
+        type: 'error',
+        error: `Error processing note: ${error}`,
+        message: `Error processing note`
+      });
     } finally {
       note = {};
       body = [];
@@ -305,13 +371,33 @@ export async function extractAndEmbedNotes(
         console.log(`Total notes processed: ${processedNotes - 1}/${totalNotes}`);
         console.log(`Total chunks processed: ${processedChunks}`);
 
+        // Send completion event
+        onProgress?.({
+          type: 'complete',
+          totalNotes,
+          processedNotes: processedNotes - 1,
+          totalChunks: processedChunks,
+          message: `Completed extraction: ${processedNotes - 1} notes, ${processedChunks} chunks processed`
+        });
+
         if (code === 0) {
           resolve();
         } else {
-          reject(new Error(`Notes extraction failed with code ${code}`));
+          const errorMsg = `Notes extraction failed with code ${code}`;
+          onProgress?.({
+            type: 'error',
+            error: errorMsg,
+            message: 'Extraction failed'
+          });
+          reject(new Error(errorMsg));
         }
       } catch (error) {
         console.error("Error during process completion:", error);
+        onProgress?.({
+          type: 'error',
+          error: `Process completion error: ${error}`,
+          message: 'Error during completion'
+        });
         reject(error);
       }
     });

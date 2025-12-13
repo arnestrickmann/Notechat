@@ -13,6 +13,7 @@ import {
 import {
   extractAndEmbedNotes,
   countNotes,
+  ProgressEvent,
 } from "./noteProcessing/extractAndEmbedNotes.js";
 import { DatabaseService } from "./database/databaseService.js";
 
@@ -106,10 +107,18 @@ async function createWindow() {
 
     ipcMain.handle("extractAndEmbedNotes", async () => {
       try {
-        await extractAndEmbedNotes(dbService);
+        await extractAndEmbedNotes(dbService, (event: ProgressEvent) => {
+          // Send progress events to renderer
+          mainWindow?.webContents.send("extraction-progress", event);
+        });
         return { success: true };
       } catch (error) {
         console.error("Error handling extractAndEmbedNotes:", error);
+        mainWindow?.webContents.send("extraction-progress", {
+          type: 'error',
+          error: `Extraction failed: ${error}`,
+          message: 'Failed to extract and embed notes'
+        });
         throw new Error("Failed to extract and embed notes");
       }
     });
